@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kishur · Mortgage Simulator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;500;600;700&family=Cormorant:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* warm Kishur palette */
+  --color-text-primary:#2B2722;
+  --color-text-secondary:#8C8377;
+  --color-background-primary:#FFFFFF;
+  --color-background-secondary:#F6F2EC;
+  --color-border-secondary:#E4DDD2;
+  --color-border-tertiary:#ECE6DC;
+  --color-background-info:#F4EEE3;
+  --color-text-info:#6E5A36;
+  --border-radius-md:10px;
+  --border-radius-lg:16px;
+  --accent:#B98C46;          /* bronze-gold from logo */
+  --accent-deep:#9A7232;
+  --accent-soft:#F3EADB;
+  --page-bg:#FAF7F2;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--page-bg)}
+body{
+  font-family:'Assistant',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  color:var(--color-text-primary);
+  -webkit-font-smoothing:antialiased;
+  line-height:1.45;
+}
+button{font-family:inherit}
+
+/* ───────── hero ───────── */
+.hero{
+  position:relative;
+  width:100%;
+  height:clamp(230px,30vw,360px);
+  background:url('assets/kishur-hero.png') center/cover no-repeat;
+  background-color:#C9A878;
+}
+.hero::after{
+  content:"";position:absolute;inset:0;
+  background:linear-gradient(180deg,rgba(40,30,18,0) 55%,rgba(40,30,18,0.28) 100%);
+  pointer-events:none;
+}
+.lang-switch{
+  position:absolute;top:18px;right:20px;z-index:3;
+  display:flex;gap:2px;padding:4px;
+  background:rgba(255,255,255,0.16);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  border:0.5px solid rgba(255,255,255,0.4);
+  border-radius:999px;
+}
+[dir="rtl"] .lang-switch{right:auto;left:20px}
+.lang-btn{
+  border:none;background:transparent;color:#fff;
+  font-size:13px;font-weight:500;letter-spacing:.02em;
+  padding:5px 13px;border-radius:999px;cursor:pointer;
+  transition:background .18s,color .18s;
+  text-shadow:0 1px 3px rgba(0,0,0,0.35);
+}
+.lang-btn:hover{background:rgba(255,255,255,0.18)}
+.lang-btn.active{background:#fff;color:var(--accent-deep);text-shadow:none;font-weight:600}
+
+/* ───────── page frame ───────── */
+.page{max-width:980px;margin:0 auto;padding:0 24px 72px}
+.intro{
+  margin:-34px auto 26px;position:relative;z-index:2;
+  background:var(--color-background-primary);
+  border:0.5px solid var(--color-border-tertiary);
+  border-radius:var(--border-radius-lg);
+  box-shadow:0 18px 40px -28px rgba(60,42,16,0.45);
+  padding:22px 28px;
+  display:flex;align-items:baseline;justify-content:space-between;gap:16px;flex-wrap:wrap;
+}
+.intro-title{font-size:24px;font-weight:600;letter-spacing:-.01em}
+.intro-sub{font-size:14px;color:var(--color-text-secondary);max-width:46ch}
+.intro-kicker{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);font-weight:600;margin-bottom:4px}
+
+/* ───────── simulator (adapted) ───────── */
+.sec{margin-bottom:1.5rem}
+.stitle{font-size:15px;font-weight:600;color:var(--color-text-primary);margin-bottom:12px;letter-spacing:.01em}
+.card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1.25rem}
+.metric{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:1rem}
+.mlabel{font-size:12px;color:var(--color-text-secondary);margin-bottom:4px}
+.mval{font-size:20px;font-weight:600;color:var(--color-text-primary)}
+.msub{font-size:11px;color:var(--color-text-secondary);margin-top:2px}
+.grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+label{font-size:13px;color:var(--color-text-secondary);display:block;margin-bottom:4px}
+.inp{font-size:14px;padding:7px 9px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-primary);width:100%}
+.inp:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.tag{display:inline-block;font-size:11px;padding:2px 9px;border-radius:var(--border-radius-md);font-weight:600}
+.t-blue{background:#E6F1FB;color:#0C447C}
+.t-teal{background:#E1F5EE;color:#085041}
+.t-amber{background:#FAEEDA;color:#633806}
+.t-purple{background:#EEEDFE;color:#3C3489}
+.path-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1rem}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:10px}
+.pct-row{display:flex;align-items:center;gap:8px}
+.pct-row input[type=range]{flex:1;accent-color:var(--accent)}
+.pct-val{font-size:13px;font-weight:600;color:var(--color-text-primary);min-width:38px;text-align:end}
+.nis-val{font-size:12px;color:var(--color-text-secondary);margin-top:3px}
+.warn{font-size:12px;margin-top:8px}
+.warn-ok{color:#0F6E56}.warn-bad{color:#993C1D}
+.tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+.tab{font-size:13px;padding:6px 15px;border:0.5px solid var(--color-border-secondary);border-radius:999px;background:transparent;color:var(--color-text-secondary);cursor:pointer;transition:.15s}
+.tab.active{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+.chart-wrap{position:relative;width:100%;height:260px}
+.prop-bar{height:10px;border-radius:5px;background:var(--color-background-secondary);margin:10px 0;overflow:hidden;display:flex}
+.equity-pulse{background:var(--accent)}.loan-pulse{background:#3E4A57}
+.legend-dot{display:inline-block;width:8px;height:8px;border-radius:2px;margin-inline-end:5px;vertical-align:middle}
+.calc-btn{
+  padding:11px 34px;font-size:15px;font-weight:600;color:#fff;cursor:pointer;
+  background:var(--accent);border:none;border-radius:999px;letter-spacing:.01em;
+  box-shadow:0 10px 22px -12px rgba(154,114,50,0.8);transition:.18s;
+}
+.calc-btn:hover{background:var(--accent-deep)}
+.mpay-banner{background:var(--color-background-info);border-radius:var(--border-radius-lg);padding:1.1rem 1.35rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:1.5rem;border:0.5px solid #E8DCC4}
+.foot{text-align:center;font-size:12px;color:var(--color-text-secondary);margin-top:40px;letter-spacing:.02em}
+.foot b{color:var(--accent-deep);font-weight:600;letter-spacing:.16em}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+</style>
+</head>
+<body>
+
+<template id="__bundler_thumbnail" data-bg-color="#C9A878">
+  <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+    <rect width="1200" height="800" fill="#C9A878"/>
+    <g fill="none" stroke="#ffffff" stroke-width="10">
+      <circle cx="600" cy="330" r="70"/>
+      <circle cx="555" cy="410" r="70"/>
+      <circle cx="645" cy="410" r="70"/>
+    </g>
+    <text x="600" y="560" text-anchor="middle" fill="#ffffff" font-family="Assistant,sans-serif" font-size="80" letter-spacing="18">KISHUR</text>
+  </svg>
+</template>
+
+<header class="hero">
+  <div class="lang-switch" id="langSwitch">
+    <button class="lang-btn" data-lang="en">EN</button>
+    <button class="lang-btn" data-lang="fr">FR</button>
+    <button class="lang-btn" data-lang="he">עברית</button>
+  </div>
+</header>
+
+<main class="page" id="app" dir="ltr">
+
+  <section class="intro">
+    <div>
+      <div class="intro-kicker" data-i18n="kicker">Kishur · Home Finance</div>
+      <div class="intro-title" data-i18n="nav_sim">Mortgage Simulator</div>
+    </div>
+    <div class="intro-sub" data-i18n="intro_sub">Plan your Israeli mortgage across multiple paths — equity, monthly payment, interest and amortization, all in one view.</div>
+  </section>
+
+  <h2 class="sr-only">Israeli mortgage simulator</h2>
+
+  <div class="sec card">
+    <div class="stitle" data-i18n="sec_property">Property &amp; equity</div>
+    <div class="grid2" style="margin-bottom:12px">
+      <div>
+        <label data-i18n="property_value">Property value (NIS)</label>
+        <input class="inp" type="number" id="propValue" value="2000000" step="50000" min="100000">
+      </div>
+      <div>
+        <label data-i18n="equity_input">Initial equity / down payment (NIS)</label>
+        <input class="inp" type="number" id="equity" value="500000" step="10000" min="0">
+      </div>
+    </div>
+    <div class="prop-bar" id="propBar">
+      <div class="equity-pulse" id="equityBar" style="width:25%"></div>
+      <div class="loan-pulse" id="loanBar" style="width:75%"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--color-text-secondary);gap:12px;flex-wrap:wrap">
+      <span><span class="legend-dot" style="background:var(--accent)"></span><span data-i18n="equity_label">Equity</span> <span id="equityPct" style="font-weight:600;color:var(--color-text-primary)">25%</span> — ₪<span id="equityNis">500,000</span></span>
+      <span><span class="legend-dot" style="background:#3E4A57"></span><span data-i18n="loan_label">Loan</span> <span id="loanPct" style="font-weight:600;color:var(--color-text-primary)">75%</span> — ₪<span id="loanNis">1,500,000</span></span>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="stitle" data-i18n="sec_paths">Loan paths</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px" id="pathsGrid"></div>
+    <div class="warn" id="shareWarn"></div>
+  </div>
+
+  <div style="margin-bottom:1.5rem">
+    <button class="calc-btn" onclick="runSim()"><span data-i18n="calculate">Calculate</span> ↗</button>
+  </div>
+
+  <div id="mpayBanner" style="display:none" class="mpay-banner">
+    <div>
+      <div style="font-size:13px;color:var(--color-text-secondary);margin-bottom:2px" data-i18n="first_payment">First monthly payment</div>
+      <div style="font-size:28px;font-weight:700;color:var(--accent-deep)" id="mpayVal">—</div>
+    </div>
+    <div style="text-align:end">
+      <div style="font-size:13px;color:var(--color-text-secondary);margin-bottom:2px" data-i18n="of_which_interest">of which interest</div>
+      <div style="font-size:18px;font-weight:600;color:var(--color-text-primary)" id="mpayInt">—</div>
+      <div style="font-size:12px;color:var(--color-text-secondary);margin-top:2px" id="mpayPrinc">—</div>
+    </div>
+  </div>
+
+  <div class="sec" id="summarySection" style="display:none">
+    <div class="grid4" id="summaryCards"></div>
+  </div>
+
+  <div class="sec card" id="chartSection" style="display:none">
+    <div class="tabs">
+      <button class="tab active" data-tab="payment" onclick="switchTab('payment',this)" data-i18n="tab_payment">Monthly payment</button>
+      <button class="tab" data-tab="balance" onclick="switchTab('balance',this)" data-i18n="tab_balance">Remaining balance</button>
+      <button class="tab" data-tab="breakdown" onclick="switchTab('breakdown',this)" data-i18n="tab_breakdown">Interest vs principal</button>
+    </div>
+    <div class="chart-wrap"><canvas id="mainChart" role="img" aria-label="Mortgage amortization chart"></canvas></div>
+  </div>
+
+  <div class="sec" id="pathDetailSection" style="display:none">
+    <div class="stitle" data-i18n="sec_breakdown">Per-path breakdown</div>
+    <div class="grid2" id="pathCards"></div>
+  </div>
+
+  <div class="foot"><b>KISHUR</b> · <span data-i18n="foot">Connecting people to their new home</span></div>
+
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+/* ─────────────── i18n ─────────────── */
+const I18N={
+  en:{
+    _locale:'en-US', _dir:'ltr',
+    title:'Kishur · Mortgage Simulator',
+    kicker:'Kishur · Home Finance',
+    nav_sim:'Mortgage Simulator',
+    intro_sub:'Plan your Israeli mortgage across multiple paths — equity, monthly payment, interest and amortization, all in one view.',
+    sec_property:'Property & equity',
+    property_value:'Property value (NIS)',
+    equity_input:'Initial equity / down payment (NIS)',
+    equity_label:'Equity', loan_label:'Loan',
+    sec_paths:'Loan paths',
+    calculate:'Calculate',
+    first_payment:'First monthly payment',
+    of_which_interest:'of which interest',
+    principal:'principal',
+    loan_amount:'Loan amount', total_paid:'Total paid', total_interest:'Total interest', duration:'Duration',
+    after_equity:'after ₪{x} equity', of_loan:'of loan', yrs:'yrs',
+    tab_payment:'Monthly payment', tab_balance:'Remaining balance', tab_breakdown:'Interest vs principal',
+    share_of_loan:'Share of loan', years:'Years', rate:'Rate %', cpi:'CPI %',
+    sec_breakdown:'Per-path breakdown',
+    first_month_payment:'1st month payment',
+    sum_ok:'Paths sum to 100%', sum_bad:'Paths sum to {x}% — should be 100%',
+    sum_alert:'Path shares must sum to 100%',
+    no_cpi:'no CPI', cpi_x:'CPI {x}%',
+    interest:'Interest', principal_cap:'Principal', month:'Month',
+    foot:'Connecting people to their new home',
+    paths:{prime:'Prime',fixed_unlinked:'Fixed unlinked',fixed_linked:'Fixed CPI-linked',variable:'Variable 5y'}
+  },
+  fr:{
+    _locale:'fr-FR', _dir:'ltr',
+    title:'Kishur · Simulateur de prêt',
+    kicker:'Kishur · Financement immobilier',
+    nav_sim:'Simulateur de prêt',
+    intro_sub:'Planifiez votre prêt immobilier israélien sur plusieurs composantes — apport, mensualité, intérêts et amortissement, en une seule vue.',
+    sec_property:'Bien & apport',
+    property_value:'Valeur du bien (NIS)',
+    equity_input:'Apport initial / mise de départ (NIS)',
+    equity_label:'Apport', loan_label:'Prêt',
+    sec_paths:'Composantes du prêt',
+    calculate:'Calculer',
+    first_payment:'Première mensualité',
+    of_which_interest:'dont intérêts',
+    principal:'capital',
+    loan_amount:'Montant du prêt', total_paid:'Total payé', total_interest:'Total des intérêts', duration:'Durée',
+    after_equity:'après ₪{x} d’apport', of_loan:'du prêt', yrs:'ans',
+    tab_payment:'Mensualité', tab_balance:'Capital restant', tab_breakdown:'Intérêts vs capital',
+    share_of_loan:'Part du prêt', years:'Années', rate:'Taux %', cpi:'IPC %',
+    sec_breakdown:'Détail par composante',
+    first_month_payment:'1ère mensualité',
+    sum_ok:'Les composantes totalisent 100 %', sum_bad:'Les composantes totalisent {x} % — doit faire 100 %',
+    sum_alert:'Les parts doivent totaliser 100 %',
+    no_cpi:'sans IPC', cpi_x:'IPC {x}%',
+    interest:'Intérêts', principal_cap:'Capital', month:'Mois',
+    foot:'Relier les gens à leur nouveau foyer',
+    paths:{prime:'Prime',fixed_unlinked:'Fixe non indexé',fixed_linked:'Fixe indexé IPC',variable:'Variable 5 ans'}
+  },
+  he:{
+    _locale:'he-IL', _dir:'rtl',
+    title:'קישור · סימולטור משכנתא',
+    kicker:'קישור · מימון לדיור',
+    nav_sim:'סימולטור משכנתא',
+    intro_sub:'תכננו את המשכנתא שלכם על פני מספר מסלולים — הון עצמי, תשלום חודשי, ריבית ולוח סילוקין, הכל במבט אחד.',
+    sec_property:'נכס והון עצמי',
+    property_value:'שווי הנכס (₪)',
+    equity_input:'הון עצמי ראשוני / מקדמה (₪)',
+    equity_label:'הון עצמי', loan_label:'הלוואה',
+    sec_paths:'מסלולי הלוואה',
+    calculate:'חישוב',
+    first_payment:'תשלום חודשי ראשון',
+    of_which_interest:'מתוכם ריבית',
+    principal:'קרן',
+    loan_amount:'סכום ההלוואה', total_paid:'סך התשלומים', total_interest:'סך הריבית', duration:'משך',
+    after_equity:'אחרי ₪{x} הון עצמי', of_loan:'מההלוואה', yrs:'שנים',
+    tab_payment:'תשלום חודשי', tab_balance:'יתרת קרן', tab_breakdown:'ריבית מול קרן',
+    share_of_loan:'חלק מההלוואה', years:'שנים', rate:'ריבית %', cpi:'מדד %',
+    sec_breakdown:'פירוט לפי מסלול',
+    first_month_payment:'תשלום חודש ראשון',
+    sum_ok:'המסלולים מסתכמים ל-100%', sum_bad:'המסלולים מסתכמים ל-{x}% — צריך להיות 100%',
+    sum_alert:'חלקי המסלולים חייבים להסתכם ל-100%',
+    no_cpi:'ללא מדד', cpi_x:'מדד {x}%',
+    interest:'ריבית', principal_cap:'קרן', month:'חודש',
+    foot:'מחברים אנשים לבית החדש שלהם',
+    paths:{prime:'פריים',fixed_unlinked:'קבועה לא צמודה',fixed_linked:'קבועה צמודה',variable:'משתנה 5 שנים'}
+  }
+};
+let lang = localStorage.getItem('kishur_lang') || 'en';
+if(!I18N[lang]) lang='en';
+function t(key){return I18N[lang][key] ?? I18N.en[key] ?? key;}
+function tf(key,x){return t(key).replace('{x}',x);}
+
+/* ─────────────── paths model ─────────────── */
+const PATHS=[
+  {key:'prime',         share:33, years:30, rate:4.45, cpi:0,   tag:"t-blue"},
+  {key:'fixed_unlinked',share:34, years:25, rate:4.80, cpi:0,   tag:"t-teal"},
+  {key:'fixed_linked',  share:20, years:25, rate:3.30, cpi:2.0, tag:"t-amber"},
+  {key:'variable',      share:13, years:30, rate:4.50, cpi:0,   tag:"t-purple"},
+];
+let chartInst=null, currentTab='payment', lastMonthly=null, lastDetails=null, adjusting=false;
+
+function fmt(n){return Math.round(n).toLocaleString(I18N[lang]._locale);}
+
+function getLoan(){
+  const prop=parseFloat(document.getElementById('propValue').value)||2000000;
+  const eq=parseFloat(document.getElementById('equity').value)||0;
+  return Math.max(0,prop-eq);
+}
+
+function updatePropertyBar(){
+  const prop=parseFloat(document.getElementById('propValue').value)||2000000;
+  const eq=Math.min(parseFloat(document.getElementById('equity').value)||0, prop);
+  const loan=Math.max(0,prop-eq);
+  const eqPct=Math.round(eq/prop*100);
+  document.getElementById('equityBar').style.width=eqPct+'%';
+  document.getElementById('loanBar').style.width=(100-eqPct)+'%';
+  document.getElementById('equityPct').textContent=eqPct+'%';
+  document.getElementById('loanPct').textContent=(100-eqPct)+'%';
+  document.getElementById('equityNis').textContent=fmt(eq);
+  document.getElementById('loanNis').textContent=fmt(loan);
+  refreshPathAmounts();
+}
+
+function refreshPathAmounts(){
+  const loan=getLoan();
+  PATHS.forEach((p,i)=>{
+    const el=document.getElementById('shareNis_'+i);
+    if(el) el.textContent='₪'+fmt(loan*p.share/100);
+  });
+  updateShareWarn();
+}
+
+function syncPathsFromInputs(){
+  PATHS.forEach((p,i)=>{
+    const y=document.getElementById('years_'+i), r=document.getElementById('rate_'+i), c=document.getElementById('cpi_'+i);
+    if(y) p.years=parseInt(y.value)||p.years;
+    if(r) p.rate=parseFloat(r.value)||0;
+    if(c) p.cpi=parseFloat(c.value)||0;
+  });
+}
+
+function buildPathCards(){
+  const g=document.getElementById('pathsGrid');
+  g.innerHTML='';
+  const loan=getLoan();
+  PATHS.forEach((p,i)=>{
+    const nisVal=Math.round(loan*p.share/100);
+    const div=document.createElement('div');
+    div.className='path-card';
+    div.innerHTML=`
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <span class="tag ${p.tag}">${t('paths')[p.key] ?? p.key}</span>
+      </div>
+      <div>
+        <label>${t('share_of_loan')}</label>
+        <div class="pct-row">
+          <input type="range" min="0" max="100" step="1" value="${p.share}" id="share_${i}" oninput="onShareChange(${i},this.value)">
+          <span class="pct-val" id="sharePct_${i}">${p.share}%</span>
+        </div>
+        <div class="nis-val" id="shareNis_${i}">₪${fmt(nisVal)}</div>
+      </div>
+      <div class="row3">
+        <div><label>${t('years')}</label><input class="inp" type="number" id="years_${i}" value="${p.years}" min="1" max="40" step="1"></div>
+        <div><label>${t('rate')}</label><input class="inp" type="number" id="rate_${i}" value="${p.rate}" min="0" max="20" step="0.05"></div>
+        <div><label>${t('cpi')}</label><input class="inp" type="number" id="cpi_${i}" value="${p.cpi}" min="0" max="10" step="0.1"></div>
+      </div>`;
+    g.appendChild(div);
+  });
+  updateShareWarn();
+}
+
+function onShareChange(changed, val){
+  if(adjusting) return;
+  adjusting=true;
+  const newVal=parseFloat(val);
+  const delta=newVal-PATHS[changed].share;
+  PATHS[changed].share=newVal;
+  const others=PATHS.map((_,i)=>i).filter(i=>i!==changed);
+  const otherSum=others.reduce((s,i)=>s+PATHS[i].share,0);
+  if(otherSum>0){
+    others.forEach(i=>{
+      PATHS[i].share=Math.max(0, PATHS[i].share - delta*(PATHS[i].share/otherSum));
+      PATHS[i].share=Math.round(PATHS[i].share*10)/10;
+    });
+  }
+  const total=PATHS.reduce((s,p)=>s+p.share,0);
+  if(Math.abs(total-100)>0.5){
+    const last=others[others.length-1];
+    PATHS[last].share=Math.max(0,PATHS[last].share+(100-total));
+    PATHS[last].share=Math.round(PATHS[last].share*10)/10;
+  }
+  const loan=getLoan();
+  PATHS.forEach((p,i)=>{
+    document.getElementById('share_'+i).value=p.share;
+    document.getElementById('sharePct_'+i).textContent=p.share.toFixed(0)+'%';
+    document.getElementById('shareNis_'+i).textContent='₪'+fmt(loan*p.share/100);
+  });
+  updateShareWarn();
+  adjusting=false;
+}
+
+function updateShareWarn(){
+  const total=PATHS.reduce((s,p)=>s+p.share,0);
+  const el=document.getElementById('shareWarn');
+  if(Math.abs(total-100)<1){
+    el.innerHTML=`<span class="warn-ok">✓ ${t('sum_ok')}</span>`;
+  } else {
+    el.innerHTML=`<span class="warn-bad">⚠ ${tf('sum_bad',total.toFixed(0))}</span>`;
+  }
+}
+
+function getPaths(){
+  const loan=getLoan();
+  return PATHS.map((p,i)=>({
+    key:p.key, tag:p.tag,
+    share:p.share/100,
+    years:parseInt(document.getElementById('years_'+i).value)||20,
+    annual_rate:parseFloat(document.getElementById('rate_'+i).value)||0,
+    annual_index:parseFloat(document.getElementById('cpi_'+i).value)||0,
+    _amount:loan*p.share/100
+  }));
+}
+
+function monthlyPayment(principal,annualRate,years){
+  const r=annualRate/100/12, n=years*12;
+  if(r===0) return principal/n;
+  return principal*r/(1-Math.pow(1+r,-n));
+}
+
+function simulatePath(path){
+  const principal=path._amount;
+  const months=path.years*12;
+  const mr=path.annual_rate/100/12;
+  const mi=path.annual_index/100/12;
+  let payment=monthlyPayment(principal,path.annual_rate,path.years);
+  let balance=principal;
+  const rows=[];
+  for(let m=1;m<=months;m++){
+    balance*=(1+mi);
+    const interest=balance*mr;
+    let pp=payment-interest, payActual=payment;
+    if(pp>balance){pp=balance;payActual=interest+pp;}
+    balance-=pp;
+    if(balance<0)balance=0;
+    rows.push({month:m,key:path.key,payment:payActual,interest,principal:pp,balance});
+    if(balance<=0.01)break;
+  }
+  return rows;
+}
+
+function runSim(){
+  syncPathsFromInputs();
+  const paths=getPaths();
+  const total=paths.reduce((s,p)=>s+p.share,0);
+  if(Math.abs(total-1)>0.02){alert(t('sum_alert'));return;}
+
+  const allDetails=paths.flatMap(p=>simulatePath(p));
+  const monthMap={};
+  allDetails.forEach(r=>{
+    if(!monthMap[r.month])monthMap[r.month]={tp:0,ti:0,tpr:0,rb:0};
+    monthMap[r.month].tp+=r.payment;
+    monthMap[r.month].ti+=r.interest;
+    monthMap[r.month].tpr+=r.principal;
+    monthMap[r.month].rb+=r.balance;
+  });
+  const monthly=Object.entries(monthMap).map(([m,v])=>({month:parseInt(m),...v})).sort((a,b)=>a.month-b.month);
+  const totalPaid=monthly.reduce((s,r)=>s+r.tp,0);
+  const totalInt=monthly.reduce((s,r)=>s+r.ti,0);
+  const loan=getLoan();
+  lastMonthly=monthly; lastDetails=allDetails;
+
+  const m1=monthly[0];
+  document.getElementById('mpayBanner').style.display='';
+  document.getElementById('mpayVal').textContent='₪'+fmt(m1.tp);
+  document.getElementById('mpayInt').textContent='₪'+fmt(m1.ti);
+  document.getElementById('mpayPrinc').textContent=t('principal')+': ₪'+fmt(m1.tpr);
+
+  document.getElementById('summarySection').style.display='';
+  document.getElementById('chartSection').style.display='';
+  document.getElementById('pathDetailSection').style.display='';
+
+  const eq=parseFloat(document.getElementById('equity').value)||0;
+  document.getElementById('summaryCards').innerHTML=`
+    <div class="metric"><div class="mlabel">${t('loan_amount')}</div><div class="mval">₪${fmt(loan)}</div><div class="msub">${tf('after_equity',fmt(eq))}</div></div>
+    <div class="metric"><div class="mlabel">${t('total_paid')}</div><div class="mval">₪${fmt(totalPaid)}</div></div>
+    <div class="metric"><div class="mlabel">${t('total_interest')}</div><div class="mval">₪${fmt(totalInt)}</div><div class="msub">${(totalInt/loan*100).toFixed(1)}% ${t('of_loan')}</div></div>
+    <div class="metric"><div class="mlabel">${t('duration')}</div><div class="mval">${(monthly[monthly.length-1].month/12).toFixed(1)} ${t('yrs')}</div></div>`;
+
+  const pc=document.getElementById('pathCards');
+  pc.innerHTML='';
+  paths.forEach((p)=>{
+    const rows=allDetails.filter(r=>r.key===p.key);
+    const tp=rows.reduce((s,r)=>s+r.payment,0);
+    const ti=rows.reduce((s,r)=>s+r.interest,0);
+    const m1p=rows[0];
+    const cpiTxt=p.annual_index>0?tf('cpi_x',p.annual_index):t('no_cpi');
+    const div=document.createElement('div');
+    div.className='path-card';
+    div.innerHTML=`
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px;flex-wrap:wrap">
+        <span class="tag ${p.tag}">${t('paths')[p.key]}</span>
+        <span style="font-size:12px;color:var(--color-text-secondary)">${(p.share*100).toFixed(0)}% · ${p.annual_rate}% · ${cpiTxt}</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div><div style="font-size:11px;color:var(--color-text-secondary)">${t('principal_cap')}</div><div style="font-size:15px;font-weight:600">₪${fmt(p._amount)}</div></div>
+        <div><div style="font-size:11px;color:var(--color-text-secondary)">${t('first_month_payment')}</div><div style="font-size:15px;font-weight:600;color:var(--accent-deep)">₪${fmt(m1p.payment)}</div></div>
+        <div><div style="font-size:11px;color:var(--color-text-secondary)">${t('total_paid')}</div><div style="font-size:15px;font-weight:600">₪${fmt(tp)}</div></div>
+        <div><div style="font-size:11px;color:var(--color-text-secondary)">${t('total_interest')}</div><div style="font-size:15px;font-weight:600">₪${fmt(ti)}</div></div>
+      </div>`;
+    pc.appendChild(div);
+  });
+
+  drawChart(monthly,currentTab);
+}
+
+function drawChart(monthly,tab){
+  if(chartInst){chartInst.destroy();chartInst=null;}
+  const labels=monthly.map(r=>(r.month===1||r.month%12===0)?'M'+r.month:'');
+  let datasets=[];
+  if(tab==='payment'){
+    datasets=[{label:t('tab_payment'),data:monthly.map(r=>Math.round(r.tp)),borderColor:'#B98C46',backgroundColor:'rgba(185,140,70,0.10)',tension:0.3,fill:true,borderWidth:2,pointRadius:0}];
+  } else if(tab==='balance'){
+    datasets=[{label:t('tab_balance'),data:monthly.map(r=>Math.round(r.rb)),borderColor:'#3E4A57',backgroundColor:'rgba(62,74,87,0.08)',tension:0.3,fill:true,borderWidth:2,pointRadius:0}];
+  } else {
+    datasets=[
+      {label:t('interest'),data:monthly.map(r=>Math.round(r.ti)),borderColor:'#C0563F',backgroundColor:'rgba(192,86,63,0.12)',tension:0.3,fill:true,borderWidth:2,pointRadius:0},
+      {label:t('principal_cap'),data:monthly.map(r=>Math.round(r.tpr)),borderColor:'#B98C46',backgroundColor:'rgba(185,140,70,0.12)',tension:0.3,fill:true,borderWidth:2,pointRadius:0},
+    ];
+  }
+  const ctx=document.getElementById('mainChart').getContext('2d');
+  chartInst=new Chart(ctx,{
+    type:'line',data:{labels,datasets},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{display:datasets.length>1,labels:{boxWidth:10,font:{size:12,family:'Assistant'}}},
+        tooltip:{callbacks:{
+          title:items=>t('month')+' '+(monthly[items[0].dataIndex]?.month??''),
+          label:item=>item.dataset.label+': ₪'+item.formattedValue
+        }}
+      },
+      scales:{
+        x:{ticks:{maxRotation:0,autoSkip:false,font:{size:11},callback:(v,i)=>labels[i]},grid:{display:false}},
+        y:{ticks:{font:{size:11},callback:v=>'₪'+Math.round(v/1000)+'k'},grid:{color:'rgba(120,100,70,0.10)'}}
+      }
+    }
+  });
+}
+
+function switchTab(tab,el){
+  currentTab=tab;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  if(lastMonthly)drawChart(lastMonthly,tab);
+}
+
+/* ─────────────── language application ─────────────── */
+function applyStatic(){
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    el.textContent=t(el.getAttribute('data-i18n'));
+  });
+  document.documentElement.lang=lang;
+  document.title=t('title');
+  const dir=I18N[lang]._dir;
+  document.documentElement.setAttribute('dir',dir);
+  document.getElementById('app').setAttribute('dir',dir);
+  document.querySelectorAll('.lang-btn').forEach(b=>b.classList.toggle('active',b.dataset.lang===lang));
+}
+
+function setLang(l){
+  if(!I18N[l]) return;
+  lang=l;
+  localStorage.setItem('kishur_lang',l);
+  syncPathsFromInputs();
+  applyStatic();
+  buildPathCards();
+  updatePropertyBar();
+  if(lastMonthly) runSim();
+}
+
+document.querySelectorAll('.lang-btn').forEach(b=>{
+  b.addEventListener('click',()=>setLang(b.dataset.lang));
+});
+document.getElementById('propValue').addEventListener('input',updatePropertyBar);
+document.getElementById('equity').addEventListener('input',updatePropertyBar);
+
+/* init */
+applyStatic();
+buildPathCards();
+updatePropertyBar();
+</script>
+</body>
+</html>
